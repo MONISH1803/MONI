@@ -10,28 +10,49 @@ interface ResultViewProps {
 
 export default function ResultView({ test, attempt, onGoHome }: ResultViewProps) {
   
-  const scoreDetails = useMemo(() => {
+  const { scoreDetails, subjectStats } = useMemo(() => {
     let correct = 0;
     let incorrect = 0;
     let unattempted = 0;
+    const stats: Record<string, { total: number, correct: number, incorrect: number, unattempted: number, marks: number }> = {};
+    
+    const pMarks = test.positiveMarks || 2;
+    const nMarks = test.negativeMarks || 0.5;
 
     test.questions.forEach(q => {
+      if (!stats[q.subject]) {
+        stats[q.subject] = { total: 0, correct: 0, incorrect: 0, unattempted: 0, marks: 0 };
+      }
+      stats[q.subject].total++;
+
       const ans = attempt.answers[q.id];
       if (!ans) {
         unattempted++;
+        stats[q.subject].unattempted++;
       } else if (ans === q.correctOptionId) {
         correct++;
+        stats[q.subject].correct++;
+        stats[q.subject].marks += pMarks;
       } else {
         incorrect++;
+        stats[q.subject].incorrect++;
+        stats[q.subject].marks -= nMarks;
       }
     });
 
-    const pMarks = test.positiveMarks || 2;
-    const nMarks = test.negativeMarks || 0.5;
     const rawMarks = (correct * pMarks) - (incorrect * nMarks);
     const marks = Math.round(rawMarks * 100) / 100;
+    
+    for (const sub in stats) {
+      stats[sub].marks = Math.round(stats[sub].marks * 100) / 100;
+    }
 
-    return { correct, incorrect, unattempted, marks };
+    const subjectStatsArray = Object.entries(stats).map(([subject, data]) => ({ subject, ...data }));
+
+    return { 
+      scoreDetails: { correct, incorrect, unattempted, marks },
+      subjectStats: subjectStatsArray
+    };
   }, [test, attempt]);
 
   const timeTaken = test.durationMinutes * 60 - attempt.timeRemaining;
@@ -85,6 +106,36 @@ export default function ResultView({ test, attempt, onGoHome }: ResultViewProps)
               <div className="text-gray-500 text-sm font-semibold mb-1">Unattempted</div>
               <div className="text-xl font-bold text-gray-800">{scoreDetails.unattempted}</div>
             </div>
+          </div>
+        </div>
+
+        {/* Subject Analysis */}
+        <div className="mb-8">
+          <h3 className="text-2xl font-bold text-gray-900 border-b pb-2 mb-6">Subject Analysis</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {subjectStats.map((stat) => (
+              <div key={stat.subject} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 p-4 flex flex-col justify-between">
+                <div>
+                  <h4 className="font-bold text-gray-900 mb-4">{stat.subject}</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm mb-4">
+                    <div className="text-gray-600">Total</div>
+                    <div className="text-right font-semibold">{stat.total}</div>
+                    <div className="text-green-600">Correct</div>
+                    <div className="text-right font-semibold text-green-700">{stat.correct}</div>
+                    <div className="text-red-500">Incorrect</div>
+                    <div className="text-right font-semibold text-red-600">{stat.incorrect}</div>
+                    <div className="text-gray-500">Unattempted</div>
+                    <div className="text-right font-semibold">{stat.unattempted}</div>
+                  </div>
+                </div>
+                <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+                  <span className="font-semibold text-gray-600 text-sm">Marks</span>
+                  <span className={`font-black text-lg ${stat.marks > 0 ? 'text-indigo-600' : 'text-gray-700'}`}>
+                    {stat.marks}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
