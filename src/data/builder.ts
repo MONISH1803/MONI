@@ -13,7 +13,9 @@ const subjects = [
   'General Intelligence and Reasoning',
   'General Awareness',
   'Quantitative Aptitude',
-  'English Comprehension'
+  'English Comprehension',
+  'Computer Knowledge',
+  'General Studies II'
 ] as const;
 
 export function buildQuestions(prefix: string, raw: RawQuestion[]): Question[] {

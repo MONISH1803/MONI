@@ -2,7 +2,9 @@ export type Subject =
   | 'General Intelligence and Reasoning' 
   | 'General Awareness' 
   | 'Quantitative Aptitude' 
-  | 'English Comprehension';
+  | 'English Comprehension'
+  | 'Computer Knowledge'
+  | 'General Studies II';
 
 export interface Option {
   id: string;
@@ -24,6 +26,8 @@ export interface MockTest {
   date: string;
   durationMinutes: number;
   totalMarks: number;
+  positiveMarks?: number;
+  negativeMarks?: number;
   questions: Question[];
 }
 

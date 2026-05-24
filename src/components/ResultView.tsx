@@ -1,5 +1,5 @@
 import { MockTest, TestAttempt } from '../types';
-import { CheckCircle2, XCircle, MinusCircle, ArrowLeft, Trophy } from 'lucide-react';
+import { CheckCircle2, XCircle, MinusCircle, ArrowLeft, Trophy, BookOpen } from 'lucide-react';
 import { useMemo } from 'react';
 
 interface ResultViewProps {
@@ -26,7 +26,10 @@ export default function ResultView({ test, attempt, onGoHome }: ResultViewProps)
       }
     });
 
-    const marks = (correct * 2) - (incorrect * 0.5);
+    const pMarks = test.positiveMarks || 2;
+    const nMarks = test.negativeMarks || 0.5;
+    const rawMarks = (correct * pMarks) - (incorrect * nMarks);
+    const marks = Math.round(rawMarks * 100) / 100;
 
     return { correct, incorrect, unattempted, marks };
   }, [test, attempt]);
@@ -102,8 +105,8 @@ export default function ResultView({ test, attempt, onGoHome }: ResultViewProps)
                     <span className="text-gray-600 text-sm font-medium">{q.subject}</span>
                   </div>
                   <div>
-                    {isCorrect && <span className="flex items-center gap-1 text-green-600 text-sm font-bold"><CheckCircle2 className="w-4 h-4"/> Correct (+2.0)</span>}
-                    {!isCorrect && !isUnattempted && <span className="flex items-center gap-1 text-red-600 text-sm font-bold"><XCircle className="w-4 h-4"/> Incorrect (-0.5)</span>}
+                    {isCorrect && <span className="flex items-center gap-1 text-green-600 text-sm font-bold"><CheckCircle2 className="w-4 h-4"/> Correct (+{test.positiveMarks || 2})</span>}
+                    {!isCorrect && !isUnattempted && <span className="flex items-center gap-1 text-red-600 text-sm font-bold"><XCircle className="w-4 h-4"/> Incorrect (-{test.negativeMarks || 0.5})</span>}
                     {isUnattempted && <span className="flex items-center gap-1 text-gray-500 text-sm font-bold"><MinusCircle className="w-4 h-4"/> Unattempted (0)</span>}
                   </div>
                 </div>

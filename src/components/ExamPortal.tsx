@@ -113,10 +113,19 @@ export default function ExamPortal({ test, onSubmit }: ExamPortalProps) {
     }
   };
 
-  const handleSubmit = () => {
-    if (window.confirm('Are you sure you want to submit the test?')) {
-      onSubmit(answers, statuses, timeLeft);
-    }
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+
+  const handleSubmitClick = () => {
+    setShowSubmitConfirm(true);
+  };
+
+  const handleConfirmSubmit = () => {
+    setShowSubmitConfirm(false);
+    onSubmit(answers, statuses, timeLeft);
+  };
+
+  const handleCancelSubmit = () => {
+    setShowSubmitConfirm(false);
   };
 
   const getStatusColor = (status: QuestionStatus) => {
@@ -333,7 +342,7 @@ export default function ExamPortal({ test, onSubmit }: ExamPortalProps) {
           {/* Submit Action */}
           <div className="p-4 bg-gray-200 flex justify-center shrink-0 border-t border-gray-300">
             <button 
-              onClick={handleSubmit}
+              onClick={handleSubmitClick}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded shadow transition-colors"
             >
               Submit
@@ -342,6 +351,30 @@ export default function ExamPortal({ test, onSubmit }: ExamPortalProps) {
         </div>
 
       </div>
+
+      {/* Submit Confirmation Modal */}
+      {showSubmitConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Submit Test?</h2>
+            <p className="text-gray-600 mb-6 font-medium">Are you sure you want to submit the test? You will not be able to change your answers after submission.</p>
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={handleCancelSubmit}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleConfirmSubmit}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-sm"
+              >
+                Yes, Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
