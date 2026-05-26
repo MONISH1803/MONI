@@ -6,7 +6,10 @@ export type RawQuestion = [
   string, // text
   string, string, string, string, // options
   string, // correct option id
-  string // explanation
+  string, // explanation
+  string?, // optional question background image URL
+  [string, string, string, string]?, // optional option image URLs
+  string? // optional context (passage)
 ];
 
 const subjects = [
@@ -24,12 +27,14 @@ export function buildQuestions(prefix: string, raw: RawQuestion[]): Question[] {
     subject: subjects[r[1]] as any,
     text: r[2],
     options: [
-      { id: '1', text: r[3] },
-      { id: '2', text: r[4] },
-      { id: '3', text: r[5] },
-      { id: '4', text: r[6] }
+      { id: '1', text: r[3], imageUrl: r[10]?.[0] },
+      { id: '2', text: r[4], imageUrl: r[10]?.[1] },
+      { id: '3', text: r[5], imageUrl: r[10]?.[2] },
+      { id: '4', text: r[6], imageUrl: r[10]?.[3] }
     ],
     correctOptionId: r[7],
-    explanation: r[8]
+    explanation: r[8],
+    imageUrl: r[9],
+    context: r[11]
   }));
 }

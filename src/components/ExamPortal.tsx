@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { MockTest, QuestionStatus, Subject } from '../types';
-import { Clock, Info, UserRound } from 'lucide-react';
+import { Clock, Info, UserRound, X } from 'lucide-react';
 
 interface ExamPortalProps {
   test: MockTest;
@@ -114,6 +114,7 @@ export default function ExamPortal({ test, onSubmit }: ExamPortalProps) {
   };
 
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
   const handleSubmitClick = () => {
     setShowSubmitConfirm(true);
@@ -204,9 +205,27 @@ export default function ExamPortal({ test, onSubmit }: ExamPortalProps) {
             </div>
 
             <div className="prose max-w-none mb-8">
+              {currentQuestion.context && (
+                <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                  <h4 className="text-sm font-bold text-yellow-800 uppercase mb-2">Comprehension Passage</h4>
+                  <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">
+                    {currentQuestion.context}
+                  </p>
+                </div>
+              )}
               <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">
                 {currentQuestion.text}
               </p>
+              {currentQuestion.imageUrl && (
+                <div className="mt-4 shrink-0 flex justify-center">
+                  <img 
+                    src={currentQuestion.imageUrl} 
+                    alt="Question figure" 
+                    className="max-w-full h-auto max-h-64 object-contain rounded border border-gray-200 p-2 bg-white cursor-zoom-in hover:border-blue-400 transition-colors" 
+                    onClick={() => setExpandedImage(currentQuestion.imageUrl!)}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -229,9 +248,23 @@ export default function ExamPortal({ test, onSubmit }: ExamPortalProps) {
                       className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                     />
                   </div>
-                  <div className="ml-3">
+                  <div className="ml-3 flex-1">
                     <span className="font-medium mr-2 text-gray-700">{i + 1}.</span>
-                    <span className="text-gray-800">{opt.text}</span>
+                    <span className="text-gray-800 inline-block">{opt.text}</span>
+                    {opt.imageUrl && (
+                      <div className="mt-2 text-center md:text-left">
+                        <img 
+                          src={opt.imageUrl} 
+                          alt={`Option ${i + 1} figure`} 
+                          className="max-w-full h-auto max-h-32 object-contain rounded border border-gray-200 bg-white cursor-zoom-in hover:border-blue-400 transition-colors" 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setExpandedImage(opt.imageUrl!);
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </label>
               ))}
@@ -373,6 +406,27 @@ export default function ExamPortal({ test, onSubmit }: ExamPortalProps) {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Zoomed Image Modal */}
+      {expandedImage && (
+        <div 
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 cursor-zoom-out"
+          onClick={() => setExpandedImage(null)}
+        >
+          <img 
+            src={expandedImage} 
+            alt="Expanded view" 
+            className="max-w-[95vw] max-h-[90vh] object-contain bg-white rounded-lg shadow-2xl p-2 cursor-default" 
+            onClick={(e) => e.stopPropagation()} 
+          />
+          <button 
+            className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full p-2"
+            onClick={() => setExpandedImage(null)}
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
       )}
     </div>

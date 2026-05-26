@@ -1,6 +1,6 @@
 import { MockTest, TestAttempt } from '../types';
-import { CheckCircle2, XCircle, MinusCircle, ArrowLeft, Trophy, BookOpen } from 'lucide-react';
-import { useMemo } from 'react';
+import { CheckCircle2, XCircle, MinusCircle, ArrowLeft, Trophy, BookOpen, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 interface ResultViewProps {
   test: MockTest;
@@ -9,7 +9,8 @@ interface ResultViewProps {
 }
 
 export default function ResultView({ test, attempt, onGoHome }: ResultViewProps) {
-  
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
+
   const { scoreDetails, subjectStats } = useMemo(() => {
     let correct = 0;
     let incorrect = 0;
@@ -163,7 +164,27 @@ export default function ResultView({ test, attempt, onGoHome }: ResultViewProps)
                 </div>
                 
                 <div className="p-6">
-                  <p className="text-gray-900 font-medium mb-6 whitespace-pre-wrap">{q.text}</p>
+                  <div className="prose max-w-none mb-6">
+                    {q.context && (
+                      <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                        <h4 className="text-sm font-bold text-yellow-800 uppercase mb-2">Comprehension Passage</h4>
+                        <p className="text-gray-800 text-base leading-relaxed whitespace-pre-wrap">
+                          {q.context}
+                        </p>
+                      </div>
+                    )}
+                    <p className="text-gray-900 font-medium whitespace-pre-wrap">{q.text}</p>
+                    {q.imageUrl && (
+                      <div className="mt-4 flex justify-center">
+                        <img 
+                          src={q.imageUrl} 
+                          alt="Question figure" 
+                          className="max-w-full h-auto max-h-64 object-contain rounded border border-gray-200 p-2 bg-white cursor-zoom-in hover:border-blue-400 transition-colors" 
+                          onClick={() => setExpandedImage(q.imageUrl!)}
+                        />
+                      </div>
+                    )}
+                  </div>
                   
                   <div className="space-y-3 mb-6">
                     {q.options.map(opt => {
@@ -182,15 +203,33 @@ export default function ResultView({ test, attempt, onGoHome }: ResultViewProps)
                       }
 
                       return (
-                        <div key={opt.id} className={`p-4 rounded-lg flex items-start gap-3 ${borderClass} ${optStyles}`}>
-                          <div className={`mt-0.5 rounded-full w-5 h-5 flex items-center justify-center border text-xs shrink-0
-                            ${isThisCorrect ? 'bg-green-500 border-green-600 text-white' : 
-                              isThisSelected ? 'bg-red-500 border-red-600 text-white' : 'border-gray-300'}`}
-                          >
-                            {isThisCorrect && <CheckCircle2 className="w-3 h-3" />}
-                            {isThisSelected && !isThisCorrect && <XCircle className="w-3 h-3" />}
+                        <div key={opt.id} className={`p-4 rounded-lg flex items-start gap-3 flex-col sm:flex-row ${borderClass} ${optStyles}`}>
+                          <div className="flex items-start gap-3 w-full">
+                            <div className={`mt-0.5 rounded-full w-5 h-5 flex items-center justify-center border text-xs shrink-0
+                              ${isThisCorrect ? 'bg-green-500 border-green-600 text-white' : 
+                                isThisSelected ? 'bg-red-500 border-red-600 text-white' : 'border-gray-300'}`}
+                            >
+                              {isThisCorrect && <CheckCircle2 className="w-3 h-3" />}
+                              {isThisSelected && !isThisCorrect && <XCircle className="w-3 h-3" />}
+                            </div>
+                            <div className="flex-1">
+                              <span>{opt.text}</span>
+                              {opt.imageUrl && (
+                                <div className="mt-3">
+                                  <img 
+                                    src={opt.imageUrl} 
+                                    alt="Option figure" 
+                                    className="max-w-full h-auto max-h-32 object-contain rounded border border-gray-200 bg-white cursor-zoom-in hover:border-blue-400 transition-colors"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      setExpandedImage(opt.imageUrl!);
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <span>{opt.text}</span>
                         </div>
                       )
                     })}
@@ -209,6 +248,27 @@ export default function ResultView({ test, attempt, onGoHome }: ResultViewProps)
         </div>
 
       </main>
+
+      {/* Zoomed Image Modal */}
+      {expandedImage && (
+        <div 
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 cursor-zoom-out"
+          onClick={() => setExpandedImage(null)}
+        >
+          <img 
+            src={expandedImage} 
+            alt="Expanded view" 
+            className="max-w-[95vw] max-h-[90vh] object-contain bg-white rounded-lg shadow-2xl p-2 cursor-default" 
+            onClick={(e) => e.stopPropagation()} 
+          />
+          <button 
+            className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full p-2 focus:outline-none"
+            onClick={() => setExpandedImage(null)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

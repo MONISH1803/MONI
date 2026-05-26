@@ -9,6 +9,7 @@ export type Subject =
 export interface Option {
   id: string;
   text: string;
+  imageUrl?: string;
 }
 
 export interface Question {
@@ -18,6 +19,8 @@ export interface Question {
   options: Option[];
   correctOptionId: string;
   explanation: string;
+  imageUrl?: string;
+  context?: string;
 }
 
 export interface MockTest {
